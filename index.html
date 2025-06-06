@@ -122,21 +122,40 @@
       <input type="text" name="driverName" id="driverName" required>
 
       <label for="vehicleNumber">Vehicle Number</label>
-      <input type="text" name="vehicleNumber" id="vehicleNumber" required>
+      <select name="vehicleNumber" id="vehicleNumber" required>
+        <option value="" disabled selected>Select Vehicle Number</option>
+        <option value="WB01BC4246">WB01BC4246</option>
+        <option value="WB01BC4245">WB01BC4245</option>
+      </select>
 
       <label for="odometer">Odometer Reading</label>
-      <input type="number" name="odometer" id="odometer" required>
+      <input type="number" name="odometer" id="odometer" step="0.01" required>
+
+      <label for="charging">Charging Percentage (%)</label>
+      <input type="number" name="charging" id="charging" min="0" max="100" required>
+
+      <label for="tcs">TCS</label>
+      <select name="tcs" id="tcs" required>
+        <option value="">Select</option>
+        <option value="YES">YES</option>
+        <option value="NO">NO</option>
+      </select>
+
+      <div id="tripKmContainer" style="display:none;">
+        <label for="tripKm">Trip KM</label>
+        <input type="number" name="tripKm" id="tripKm" step="0.01">
+      </div>
 
       <label for="company">Company</label>
       <select name="company" id="company" required>
         <option value="">Select Company</option>
-        <option value="TCS">TCS</option>
         <option value="Concentrix">Concentrix</option>
         <option value="Capgemini">Capgemini</option>
         <option value="Cognizant">Cognizant</option>
       </select>
 
-      <div id="kmTripsWrapper"></div>
+      <label for="numTrips">Number of Trips</label>
+      <input type="number" name="numTrips" id="numTrips" required>
 
       <div class="checklist">
         <label class="item"><input type="checkbox" name="checklist[]" value="Stepney Tyre"><img src="stepney.png">Stepney Tyre</label>
@@ -147,7 +166,6 @@
         <label class="item"><input type="checkbox" name="checklist[]" value="Umbrella"><img src="umbrella.png">Umbrella</label>
         <label class="item"><input type="checkbox" name="checklist[]" value="Mobile Stand"><img src="mobile.png">Mobile Stand</label>
         <label class="item"><input type="checkbox" name="checklist[]" value="Cleaning Cloth"><img src="cloth.png">Cleaning Cloth</label>
-        <label class="item"><input type="checkbox" name="checklist[]" value="Lug Wrench"><img src="wrench.png">Lug Wrench</label>
         <label class="item"><input type="checkbox" name="checklist[]" value="Car Clean"><img src="car_clean.jpg">Car Clean</label>
         <label class="item"><input type="checkbox" name="checklist[]" value="Car Smell"><img src="smell.jpg">Car Smell</label>
       </div>
@@ -164,39 +182,29 @@
   </div>
 
   <script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbx5Y1jXYzideC2bUCb_tYropNGldBtpX2IEccbeafHNsnQRsq2acfsTTTP70lr4frvT/exec';
-    const form = document.getElementById('checklistForm');
-    const company = document.getElementById('company');
-    const wrapper = document.getElementById('kmTripsWrapper');
+    const tcs = document.getElementById('tcs');
+    const tripKmContainer = document.getElementById('tripKmContainer');
 
-    company.addEventListener('change', () => {
-      wrapper.innerHTML = '';
-      if (company.value === 'TCS') {
-        wrapper.innerHTML = `
-          <label for="totalKm">Total KM</label>
-          <input type="number" name="totalKm" id="totalKm" required>
-        `;
-      } else if (company.value) {
-        wrapper.innerHTML = `
-          <label for="trips">Number of Trips</label>
-          <input type="number" name="trips" id="trips" required>
-        `;
-      }
+    tcs.addEventListener('change', () => {
+      tripKmContainer.style.display = tcs.value === 'YES' ? 'block' : 'none';
     });
 
-    form.addEventListener('submit', e => {
+    document.getElementById('checklistForm').addEventListener('submit', function(e) {
       e.preventDefault();
-      fetch(scriptURL, {
+      const form = e.target;
+
+      fetch('https://script.google.com/macros/s/AKfycbxCTZqCDS1fVcLgJY39k9GhKySWmlQ1vvEOxzUSPkAPWpLZ4CQ86hK9ilGrkZOB2G7Sfw/exec', {
         method: 'POST',
         body: new FormData(form)
       })
       .then(response => {
         alert('Form submitted successfully!');
         form.reset();
-        wrapper.innerHTML = ''; // clear extra input
+        tripKmContainer.style.display = 'none';
       })
       .catch(error => {
-        alert('Error submitting form: ' + error.message);
+        alert('Error submitting form!');
+        console.error(error);
       });
     });
   </script>
